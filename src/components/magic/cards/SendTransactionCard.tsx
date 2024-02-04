@@ -12,9 +12,11 @@ import Spacer from '@/components/ui/Spacer';
 import TransactionHistory from '@/components/ui/TransactionHistory';
 import Image from 'next/image';
 import Link from 'public/link.svg';
+import { useAlchemyProvider } from '../AlchemyProvider';
 
 const SendTransaction = () => {
   const { web3 } = useMagic();
+  const { provider } = useAlchemyProvider();
   const [toAddress, setToAddress] = useState('');
   const [amount, setAmount] = useState('');
   const [disabled, setDisabled] = useState(!toAddress || !amount);
@@ -29,7 +31,7 @@ const SendTransaction = () => {
     setToAddressError(false);
   }, [amount, toAddress]);
 
-  const sendTransaction = useCallback(() => {
+  const sendTransaction = useCallback(async () => {
     if (!web3?.utils.isAddress(toAddress)) {
       return setToAddressError(true);
     }
@@ -37,31 +39,27 @@ const SendTransaction = () => {
       return setAmountError(true);
     }
     setDisabled(true);
-    const txnParams = {
-      from: publicAddress,
-      to: toAddress,
+
+    const result = await provider.sendUserOperation({
+      target: toAddress as `0x${string}`,
+      data: "0x",
       value: web3.utils.toWei(amount, 'ether'),
-      gas: 21000,
-    };
-    web3.eth
-      .sendTransaction(txnParams as any)
-      .on('transactionHash', (txHash) => {
-        setHash(txHash);
-        console.log('Transaction hash:', txHash);
-      })
+    });
+
+    const txHash = await provider.waitForUserOperationTransaction(result.hash)
       .then((receipt) => {
         showToast({
-          message: 'Transaction Successful',
+          message: `Transaction Successful. TX Hash: ${receipt}`,
           type: 'success',
         });
+        setHash(receipt);
         setToAddress('');
         setAmount('');
         console.log('Transaction receipt:', receipt);
       })
-      .catch((error) => {
-        console.error(error);
-        setDisabled(false);
-      });
+
+    console.log(txHash);
+    setDisabled(false);
   }, [web3, amount, publicAddress, toAddress]);
 
   return (
