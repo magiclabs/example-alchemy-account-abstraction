@@ -12,7 +12,7 @@ import Spacer from '@/components/ui/Spacer';
 import TransactionHistory from '@/components/ui/TransactionHistory';
 import Image from 'next/image';
 import Link from 'public/link.svg';
-import { useAlchemyProvider } from '../AlchemyProvider';
+import { useAlchemyProvider } from '@/components/alchemy/useAlchemyProvider';
 
 const SendTransaction = () => {
   const { web3 } = useMagic();

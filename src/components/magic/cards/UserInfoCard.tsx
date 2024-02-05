@@ -1,35 +1,29 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-import Divider from "@/components/ui/Divider"
-import { LoginProps } from "@/utils/types"
-import { logout } from "@/utils/common"
-import { useMagic } from "../MagicProvider"
-import Card from "@/components/ui/Card"
-import CardHeader from "@/components/ui/CardHeader"
-import CardLabel from "@/components/ui/CardLabel"
-import Spinner from "@/components/ui/Spinner"
-import { getNetworkName, getNetworkToken } from "@/utils/network"
-import { useAlchemyProvider } from "../AlchemyProvider"
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Divider from '@/components/ui/Divider';
+import { LoginProps } from '@/utils/types';
+import { logout } from '@/utils/common';
+import { useMagic } from '../MagicProvider';
+import Card from '@/components/ui/Card';
+import CardHeader from '@/components/ui/CardHeader';
+import CardLabel from '@/components/ui/CardLabel';
+import Spinner from '@/components/ui/Spinner';
+import { getNetworkName, getNetworkToken } from '@/utils/network';
+import { useAlchemyProvider } from '@/components/alchemy/useAlchemyProvider';
 
 const UserInfo = ({ token, setToken }: LoginProps) => {
-  const { magic, web3 } = useMagic()
-  const [magicBalance, setMagicBalance] = useState("...")
-  const [scaBalance, setScaBalance] = useState("...")
-  const [copied, setCopied] = useState("Copy")
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
-  const [magicAddress] = useState(localStorage.getItem("user"))
-  const [scaAddress, setScaAddress] = useState("")
-
+  const { magic, web3 } = useMagic();
   const { provider } = useAlchemyProvider()
 
-  const getSmartContractAccount = useCallback(async () => {
-    const aaAccount = await provider.account?.getAddress()
-    setScaAddress(aaAccount as `0x${string}`)
-  }, [provider])
+  const [magicBalance, setMagicBalance] = useState<string>("...")
+  const [scaBalance, setScaBalance] = useState<string>("...")
+  const [magicAddress] = useState(
+    localStorage.getItem("user")
+  )
+  const [scaAddress, setScaAddress] = useState<string>("")
+  const [copied, setCopied] = useState('Copy');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    getSmartContractAccount()
-  }, [provider, provider.account, getSmartContractAccount])
+  const [publicAddress] = useState(localStorage.getItem('user'));
 
   const getBalance = useCallback(async () => {
     if (magicAddress && web3) {
@@ -50,19 +44,28 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
     }
   }, [web3, magicAddress, scaAddress])
 
+  const getSmartContractAccount = useCallback(async () => {
+    const aaAccount = await provider.account?.getAddress()
+    setScaAddress(aaAccount as `0x${string}`)
+  }, [provider])
+
+  useEffect(() => {
+    getSmartContractAccount()
+  }, [provider, provider.account, getSmartContractAccount])
+
   const refresh = useCallback(async () => {
-    setIsRefreshing(true)
-    await getBalance()
+    setIsRefreshing(true);
+    await getBalance();
     setTimeout(() => {
-      setIsRefreshing(false)
-    }, 500)
-  }, [getBalance])
+      setIsRefreshing(false);
+    }, 500);
+  }, [getBalance]);
 
   useEffect(() => {
     if (web3) {
-      refresh()
+      refresh();
     }
-  }, [web3, refresh])
+  }, [web3, refresh]);
 
   useEffect(() => {
     setMagicBalance("...")
@@ -71,28 +74,24 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
 
   const disconnect = useCallback(async () => {
     if (magic) {
-      await logout(setToken, magic)
+      await logout(setToken, magic);
     }
-  }, [magic, setToken])
+  }, [magic, setToken]);
 
   const copy = useCallback(() => {
-    if (magicAddress && copied === "Copy") {
-      setCopied("Copied!")
-      navigator.clipboard.writeText(magicAddress)
+    if (publicAddress && copied === 'Copy') {
+      setCopied('Copied!');
+      navigator.clipboard.writeText(publicAddress);
       setTimeout(() => {
-        setCopied("Copy")
-      }, 1000)
+        setCopied('Copy');
+      }, 1000);
     }
-  }, [copied, magicAddress])
+  }, [copied, publicAddress]);
 
   return (
     <Card>
       <CardHeader id="Wallet">Wallet</CardHeader>
-      <CardLabel
-        leftHeader="Status"
-        rightAction={<div onClick={disconnect}>Disconnect</div>}
-        isDisconnect
-      />
+      <CardLabel leftHeader="Status" rightAction={<div onClick={disconnect}>Disconnect</div>} isDisconnect />
       <div className="flex-row">
         <div className="green-dot" />
         <div className="connected">Connected to {getNetworkName()}</div>
@@ -136,7 +135,7 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
         </div>
       </div>
     </Card>
-  )
-}
+  );
+};
 
-export default UserInfo
+export default UserInfo;
