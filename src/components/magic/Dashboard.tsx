@@ -1,6 +1,7 @@
 import React from 'react';
 import WalletMethods from './cards/WalletMethodsCard';
-import SendTransaction from './cards/SendTransactionCard';
+import SendAaTransaction from './cards/SendAaTransactionCard';
+import SendEoaTransaction from './cards/SendEoaTransactionCard';
 import Spacer from '@/components/ui/Spacer';
 import { LoginProps } from '@/utils/types';
 import UserInfo from './cards/UserInfoCard';
@@ -14,7 +15,9 @@ export default function Dashboard({ token, setToken }: LoginProps) {
       <div className="cards-container">
         <UserInfo token={token} setToken={setToken} />
         <Spacer size={10} />
-        <SendTransaction />
+        <SendEoaTransaction />
+        <Spacer size={10} />
+        <SendAaTransaction />
         <Spacer size={10} />
         <WalletMethods token={token} setToken={setToken} />
         <Spacer size={15} />
