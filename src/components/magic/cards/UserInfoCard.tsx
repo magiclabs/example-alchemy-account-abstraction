@@ -8,50 +8,53 @@ import CardHeader from '@/components/ui/CardHeader';
 import CardLabel from '@/components/ui/CardLabel';
 import Spinner from '@/components/ui/Spinner';
 import { getNetworkName, getNetworkToken } from '@/utils/network';
+import { formatEther } from 'viem';
 import { useAlchemyProvider } from '@/components/alchemy/useAlchemyProvider';
 
-const UserInfo = ({ token, setToken }: LoginProps) => {
-  const { magic, web3 } = useMagic();
-  const { provider } = useAlchemyProvider()
-
-  const [magicBalance, setMagicBalance] = useState<string>("...")
-  const [scaBalance, setScaBalance] = useState<string>("...")
-  const [magicAddress] = useState(
-    localStorage.getItem("user")
-  )
-  const [scaAddress, setScaAddress] = useState<string>("")
+const UserInfo = ({ setToken }: LoginProps) => {
+  const { magic, walletClient, publicClient } = useMagic();
+  const { smartClient } = useAlchemyProvider();
+  const [magicBalance, setMagicBalance] = useState<string>('...');
+  const [scaBalance, setScaBalance] = useState<string>('...');
   const [copied, setCopied] = useState('Copy');
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const [publicAddress] = useState(localStorage.getItem('user'));
+  const [scaAddress, setScaAddress] = useState<string | undefined>('');
+  const [magicAddress] = useState(localStorage.getItem('user'));
 
   const getBalance = useCallback(async () => {
-    if (magicAddress && web3) {
-      const magicBalance = await web3.eth.getBalance(magicAddress)
+    if (magicAddress && publicClient) {
+      const magicBalance = await publicClient?.getBalance({
+        address: magicAddress as `0x${string}`
+      });
       if (magicBalance == BigInt(0)) {
-        setMagicBalance("0")
+        setMagicBalance('0');
       } else {
-        setMagicBalance(web3.utils.fromWei(magicBalance, "ether"))
+        setMagicBalance(formatEther(magicBalance));
       }
+      console.log('MAGIC BALANCE: ', formatEther(magicBalance));
     }
-    if (scaAddress && web3) {
-      const aaBalance = await web3.eth.getBalance(scaAddress)
+    if (scaAddress && publicClient) {
+      const aaBalance = await publicClient?.getBalance({
+        address: scaAddress as `0x${string}`
+      });
       if (aaBalance == BigInt(0)) {
-        setScaBalance("0")
+        setScaBalance('0');
       } else {
-        setScaBalance(web3.utils.fromWei(aaBalance, "ether"))
+        setScaBalance(formatEther(aaBalance));
       }
+      console.log('SMART ACCOUNT BALANCE: ', formatEther(aaBalance));
     }
-  }, [web3, magicAddress, scaAddress])
+  }, [scaAddress, magicAddress, publicClient]);
 
   const getSmartContractAccount = useCallback(async () => {
-    const aaAccount = await provider.account?.getAddress()
-    setScaAddress(aaAccount as `0x${string}`)
-  }, [provider])
+    if (smartClient) {
+      setScaAddress(smartClient.account?.address);
+    }
+  }, [smartClient]);
 
   useEffect(() => {
     getSmartContractAccount()
-  }, [provider, provider.account, getSmartContractAccount])
+  }, [getSmartContractAccount])
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -62,15 +65,15 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
   }, [getBalance]);
 
   useEffect(() => {
-    if (web3) {
+    if (publicClient && walletClient) {
       refresh();
     }
-  }, [web3, refresh]);
+  }, [publicClient, walletClient, refresh]);
 
   useEffect(() => {
-    setMagicBalance("...")
-    setScaBalance("...")
-  }, [magic])
+    setMagicBalance('...');
+    setScaBalance('...');
+  }, [magic]);
 
   const disconnect = useCallback(async () => {
     if (magic) {
@@ -79,14 +82,14 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
   }, [magic, setToken]);
 
   const copy = useCallback(() => {
-    if (publicAddress && copied === 'Copy') {
+    if (magicAddress && copied === 'Copy') {
       setCopied('Copied!');
-      navigator.clipboard.writeText(publicAddress);
+      navigator.clipboard.writeText(magicAddress);
       setTimeout(() => {
         setCopied('Copy');
       }, 1000);
     }
-  }, [copied, publicAddress]);
+  }, [copied, magicAddress]);
 
   return (
     <Card>
@@ -97,21 +100,10 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
         <div className="connected">Connected to {getNetworkName()}</div>
       </div>
       <Divider />
-      <CardLabel
-        leftHeader="Addresses"
-        rightAction={
-          !magicAddress ? <Spinner /> : <div onClick={copy}>{copied}</div>
-        }
-      />
-      <div className="flex flex-col gap-2">
-        <div className="code">
-          Magic:{" "}
-          {magicAddress?.length == 0 ? "Fetching address..." : magicAddress}
-        </div>
-        <div className="code">
-          Smart Contract Account:{" "}
-          {scaAddress?.length == 0 ? "Fetching address..." : scaAddress}
-        </div>
+      <CardLabel leftHeader="Addresses" rightAction={!magicAddress ? <Spinner /> : <div onClick={copy}>{copied}</div>} />
+      <div className='flex flex-col gap-2'>
+        <div className="code">Magic Wallet:{' '}{magicAddress?.length == 0 ? 'Fetching address..' : magicAddress}</div>
+        <div className="code">Smart Contract Wallet:{' '}{scaAddress?.length == 0 ? 'Fetching address..' : scaAddress}</div>
       </div>
       <Divider />
       <CardLabel
@@ -126,12 +118,12 @@ const UserInfo = ({ token, setToken }: LoginProps) => {
           )
         }
       />
-      <div className="flex flex-col gap-2">
+      <div className='flex flex-col gap-2'>
         <div className="code">
-          Magic: {magicBalance.substring(0, 7)} {getNetworkToken()}
+          Magic Balance: {magicBalance.substring(0, 7)} {getNetworkToken()}
         </div>
         <div className="code">
-          AA: {scaBalance.substring(0, 7)} {getNetworkToken()}
+          Smart Account Balance: {scaBalance.substring(0, 7)} {getNetworkToken()}
         </div>
       </div>
     </Card>

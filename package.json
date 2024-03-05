@@ -9,9 +9,8 @@
     "lint": "next lint --fix"
   },
   "dependencies": {
-    "@alchemy/aa-accounts": "^2.4.0",
-    "@alchemy/aa-alchemy": "^2.4.0",
-    "@alchemy/aa-core": "^2.3.1",
+    "@alchemy/aa-alchemy": "^3.4.1",
+    "@alchemy/aa-core": "^3.4.0",
     "@magic-ext/oauth": "^15.0.0",
     "@types/node": "20.3.3",
     "@types/react": "18.2.14",
@@ -26,8 +25,7 @@
     "react-toastify": "^9.1.3",
     "tailwindcss": "3.3.2",
     "typescript": "5.1.6",
-    "viem": "1.16.0",
-    "web3": "^4.0.2"
+    "viem": "^2.7.16"
   },
   "devDependencies": {
     "eslint": "^8.45.0",

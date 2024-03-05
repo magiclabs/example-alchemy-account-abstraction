@@ -5,6 +5,17 @@ export enum Network {
   ETHEREUM = 'ethereum',
 }
 
+export const getAlchemyApiKey = () => {
+  switch (process.env.NEXT_PUBLIC_BLOCKCHAIN_NETWORK) {
+    case Network.ETHEREUM:
+      return process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+    case Network.ETHEREUM_SEPOLIA:
+      return process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+    default:
+      throw new Error('Network not supported.')
+  }
+}
+
 export const getNetworkUrl = () => {
   switch (process.env.NEXT_PUBLIC_BLOCKCHAIN_NETWORK) {
     case Network.POLYGON:
@@ -12,9 +23,9 @@ export const getNetworkUrl = () => {
     case Network.POLYGON_AMOY:
       return 'https://rpc-amoy.polygon.technology/';
     case Network.ETHEREUM_SEPOLIA:
-      return 'https://eth-sepolia.g.alchemy.com/v2/fYFybLQFR9Zr2GCRcgALmAktStFKr0i0';
+      return `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`;
     case Network.ETHEREUM:
-      return 'https://eth-mainnet.g.alchemy.com/v2/fYFybLQFR9Zr2GCRcgALmAktStFKr0i0';
+      return `https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`;
     default:
       throw new Error('Network not supported');
   }
@@ -66,15 +77,15 @@ export const getNetworkName = () => {
   }
 };
 
-export const getBlockExplorer = (address: string) => {
+export const getBlockExplorer = (hash: string) => {
   switch (process.env.NEXT_PUBLIC_BLOCKCHAIN_NETWORK) {
     case Network.POLYGON:
-      return `https://polygonscan.com/address/${address}`;
+      return `https://polygonscan.com/tx/${hash}`;
     case Network.POLYGON_AMOY:
-      return `https://www.oklink.com/amoy/address/${address}`;
+      return `https://www.oklink.com/amoy/tx/${hash}`;
     case Network.ETHEREUM:
-      return `https://etherscan.io/address/${address}`;
+      return `https://etherscan.io/tx/${hash}`;
     case Network.ETHEREUM_SEPOLIA:
-      return `https://sepolia.etherscan.io/address/${address}`;
+      return `https://sepolia.etherscan.io/tx/${hash}`;
   }
-};
+}
